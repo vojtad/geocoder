@@ -39,7 +39,7 @@ module Geocoder
 
     def table_columns(table_name)
       {
-        maxmind_geolite_city_blocks: %w[start_ip_num end_ip_num loc_id],
+        maxmind_geolite_city_blocks: %w[ip_range loc_id],
         maxmind_geolite_city_location: %w[loc_id country region city postal_code latitude longitude metro_code area_code],
         maxmind_geolite_country: %w[start_ip end_ip start_ip_num end_ip_num country_code country]
       }[table_name.to_sym]
@@ -66,9 +66,16 @@ module Geocoder
     end
 
     def insert_rows(table, headers, rows)
-      value_strings = rows.map do |row|
-        "(" + row.map{ |col| sql_escaped_value(col) }.join(',') + ")"
+      if table == 'maxmind_geolite_city_blocks'
+        value_strings = rows.map do |row|
+          "(int8range(#{sql_escaped_value(row[0])}, #{sql_escaped_value(row[1])}, '[]'), #{sql_escaped_value(row[2])})"
+        end
+      else
+        value_strings = rows.map do |row|
+          "(" + row.map{ |col| sql_escaped_value(col) }.join(',') + ")"
+        end
       end
+
       q = "INSERT INTO #{table} (#{headers.join(',')}) " +
         "VALUES #{value_strings.join(',')}"
       ActiveRecord::Base.connection.execute(q)

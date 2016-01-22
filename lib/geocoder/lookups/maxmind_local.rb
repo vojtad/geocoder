@@ -35,8 +35,8 @@ module Geocoder::Lookup
       elsif configuration[:package] == :city
         addr = IPAddr.new(query.text).to_i
         q = "SELECT l.country, l.region, l.city, l.latitude, l.longitude
-          FROM maxmind_geolite_city_location l WHERE l.loc_id = (SELECT b.loc_id FROM maxmind_geolite_city_blocks b
-          WHERE b.start_ip_num <= #{addr} AND #{addr} <= b.end_ip_num)"
+          FROM maxmind_geolite_city_location l WHERE l.loc_id IN (SELECT b.loc_id FROM maxmind_geolite_city_blocks b
+          WHERE b.ip_range @> #{addr})"
         format_result(q, [:country_name, :region_name, :city_name, :latitude, :longitude])
       elsif configuration[:package] == :country
         addr = IPAddr.new(query.text).to_i

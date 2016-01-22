@@ -1,13 +1,11 @@
 class GeocoderMaxmindGeoliteCity < ActiveRecord::Migration
   def self.up
     create_table :maxmind_geolite_city_blocks, id: false do |t|
-      t.column :start_ip_num, :bigint, null: false
-      t.column :end_ip_num, :bigint, null: false
+      t.column :ip_range, :int8range, null: false
       t.column :loc_id, :bigint, null: false
     end
     add_index :maxmind_geolite_city_blocks, :loc_id
-    add_index :maxmind_geolite_city_blocks, :start_ip_num, unique: true
-    add_index :maxmind_geolite_city_blocks, [:end_ip_num, :start_ip_num], unique: true, name: 'index_maxmind_geolite_city_blocks_on_end_ip_num_range'
+    add_index :maxming_geolite_city_with_range_blocks, :ip_range, using: 'gist', name: 'index_maxmind_geolite_city_blocks_on_ip_range'
 
     create_table :maxmind_geolite_city_location, id: false do |t|
       t.column :loc_id, :bigint, null: false
