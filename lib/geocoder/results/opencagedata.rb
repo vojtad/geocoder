@@ -36,12 +36,13 @@ module Geocoder::Result
       @data['components']['village']
     end
 
-
     def state
       @data['components']['state']
     end
 
-    alias_method :state_code, :state
+    def state_code
+      @data['components']['state_code']
+    end
 
     def postal_code
       @data['components']['postcode'].to_s
@@ -66,6 +67,23 @@ module Geocoder::Result
     def coordinates
       [@data['geometry']['lat'].to_f, @data['geometry']['lng'].to_f]
     end
+
+    def viewport
+      bounds = @data['bounds'] || fail
+      south, west = %w(lat lng).map { |i| bounds['southwest'][i] }
+      north, east = %w(lat lng).map { |i| bounds['northeast'][i] }
+      [south, west, north, east]
+    end
+
+    def time_zone
+      # The OpenCage API documentation states that `annotations` is available
+      # "when possible" https://geocoder.opencagedata.com/api#annotations
+      @data
+        .fetch('annotations', {})
+        .fetch('timezone', {})
+        .fetch('name', nil)
+    end
+
     def self.response_attributes
       %w[boundingbox license 
         formatted stadium]

@@ -3,6 +3,98 @@ Changelog
 
 Major changes to Geocoder for each release. Please see the Git log for complete list of changes.
 
+1.4.7 (2018 Mar 13)
+-------------------
+* Allow HTTP protocol for Nominatim.
+
+1.4.6 (2018 Feb 28)
+-------------------
+* Add support for :ipdata_co lookup (thanks github.com/roschaefer).
+* Update for Rails 5.2 compatibility (thanks github.com/stevenharman).
+
+1.4.5 (2017 Nov 29)
+-------------------
+* Add support for :pickpoint lookup (thanks github.com/cylon-v).
+* Add support for :db_ip_com lookup (thanks github.com/cv).
+* Change FreeGeoIP host to freegeoip.net.
+* Allow search radius to be a symbol representing a column in DB (thanks github.com/leonelgalan).
+* Add support for new parameters and improved error handling for several lookups.
+* Fix bug in SQL when searching for objects across 180th meridian.
+
+1.4.4 (2017 May 17)
+-------------------
+* Use HTTPS by default for :freegeoip (thanks github.com/mehanoid).
+* Add support for :amap lookup (thanks github.com/pzgz).
+
+1.4.3 (2017 Feb  7)
+-------------------
+* Add :google_places_search lookup (thanks github.com/waruboy).
+
+1.4.2 (2017 Jan 31)
+-------------------
+* Fix bug that caused Model.near to return an incorrect query in some cases.
+
+1.4.1 (2016 Dec  2)
+-------------------
+* Add :location_iq lookup (thanks github.com/aleemuddin13 and glsignal).
+* Add :ban_data_gouv_fr lookup (thanks github.com/JulianNacci).
+* Fix :mapbox results when server returns no context (thanks github.com/jcmuller).
+* Deprecate methods in Geocoder::Calculations: to_kilometers, to_miles, to_nautical_miles, mi_in_km, km_in_mi, km_in_nm, nm_in_km.
+
+1.4.0 (2016 Sep  8)
+-------------------
+* Only consider an object geocoded if both lat and lon are present (previously was sufficient to have only one of the two) (thanks github.com/mltsy).
+* Add support in :geocodio lookup for Canadian addresses (thanks github.com/bolandrm).
+* Add support for SQLite extensions, if present (thanks github.com/stevecj).
+* Always include Geocoder in Rack::Request, if defined (thanks github.com/wjordan).
+
+1.3.7 (2016 Jun  9)
+-------------------
+* Fix Ruby 1.9, 2.0 incompatibility (thanks github.com/ebouchut).
+* Update SmartyStreets zipcode API endpoint (thanks github.com/jeffects).
+* Catch network errors (thanks github.com/sas1ni69).
+
+1.3.6 (2016 May 31)
+-------------------
+* Fix Sinatra support broken in 1.3.5.
+
+1.3.5 (2016 May 27)
+-------------------
+* Fix Rails 5 ActionDispatch include issue (thanks github.com/alepore).
+* Fix bug that caused :esri lookup to ignore certain configured parameters (thanks github.com/aaronpk).
+* Add reverse geocoding support to :pelias/:mapzen (thanks github.com/shinyaK14).
+* Add support for custom host with :telize (thanks github.com/jwaldrip).
+* Change the way :esri lookup generates cache keys for improved performance (thanks github.com/aaronpk).
+* Improve HTTPS connections with :google (thanks github.com/jlhonora).
+
+1.3.4 (2016 Apr 14)
+-------------------
+* Update :freegeoip host (old one is down).
+* Add IP lookup :ipapi_com (thanks github.com/piotrgorecki).
+
+1.3.3 (2016 Apr 4)
+------------------
+* Fix incorrect gem version number.
+
+1.3.2 (2016 Apr 1)
+------------------
+* Remove :yahoo lookup (service was discontinued Mar 31) (thanks github.com/galiat).
+* Add support for LatLon.io service (thanks github.com/evanmarks).
+* Add support for IpInfo.io service (thanks github.com/rehan, akostyuk).
+* Add support for Pelias/Mapzen service (thanks github.com/RealScout).
+
+1.3.1 (2016 Feb 20)
+-------------------
+* Warn about upcoming discontinuation of :yahoo lookup (thanks github.com/galiat).
+* Add #viewport method to results that return viewport data (thanks github.com/lime).
+
+1.3.0 (2016 Jan 31)
+-------------------
+* Lazy load lookups to reduce memory footprint (thanks github.com/TrangPham).
+* Add :geoportail_lu lookup (Luxembourg only) (thanks github.com/mdebo).
+* Maxmind local query performance improvement (thanks github.com/vojtad).
+* Remove deprecated Mongo near query methods (please use Mongo-native methods instead).
+
 1.2.14 (2015 Dec 27)
 --------------------
 * Fix bug in :geoip2 lookup (thanks github.com/mromulus).

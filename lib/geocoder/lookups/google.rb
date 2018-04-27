@@ -27,6 +27,17 @@ module Geocoder::Lookup
 
     private # ---------------------------------------------------------------
 
+    def configure_ssl!(client)
+      client.instance_eval {
+        @ssl_context = OpenSSL::SSL::SSLContext.new
+        options = OpenSSL::SSL::OP_NO_SSLv2 | OpenSSL::SSL::OP_NO_SSLv3
+        if OpenSSL::SSL.const_defined?('OP_NO_COMPRESSION')
+          options |= OpenSSL::SSL::OP_NO_COMPRESSION
+        end
+        @ssl_context.set_params({options: options})
+      }
+    end
+
     def valid_response?(response)
       json = parse_json(response.body)
       status = json["status"] if json
@@ -39,23 +50,27 @@ module Geocoder::Lookup
         return doc['results']
       when "OVER_QUERY_LIMIT"
         raise_error(Geocoder::OverQueryLimitError) ||
-          Geocoder.log(:warn, "Google Geocoding API error: over query limit.")
+          Geocoder.log(:warn, "#{name} API error: over query limit.")
       when "REQUEST_DENIED"
         raise_error(Geocoder::RequestDenied) ||
-          Geocoder.log(:warn, "Google Geocoding API error: request denied.")
+          Geocoder.log(:warn, "#{name} API error: request denied.")
       when "INVALID_REQUEST"
         raise_error(Geocoder::InvalidRequest) ||
-          Geocoder.log(:warn, "Google Geocoding API error: invalid request.")
+          Geocoder.log(:warn, "#{name} API error: invalid request.")
       end
       return []
     end
 
     def query_url_google_params(query)
       params = {
-        (query.reverse_geocode? ? :latlng : :address) => query.sanitized_text,
         :sensor => "false",
         :language => (query.language || configuration.language)
       }
+      if query.options[:google_place_id]
+        params[:place_id] = query.sanitized_text
+      else
+        params[(query.reverse_geocode? ? :latlng : :address)] = query.sanitized_text
+      end
       unless (bounds = query.options[:bounds]).nil?
         params[:bounds] = bounds.map{ |point| "%f,%f" % point }.join('|')
       end
@@ -64,6 +79,9 @@ module Geocoder::Lookup
       end
       unless (components = query.options[:components]).nil?
         params[:components] = components.is_a?(Array) ? components.join("|") : components
+      end
+      unless (result_type = query.options[:result_type]).nil?
+        params[:result_type] = result_type.is_a?(Array) ? result_type.join("|") : result_type
       end
       params
     end

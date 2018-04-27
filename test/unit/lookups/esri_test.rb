@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'test_helper'
+require 'geocoder/esri_token'
 
 class EsriTest < GeocoderTestCase
 
@@ -13,6 +14,43 @@ class EsriTest < GeocoderTestCase
     res = lookup.query_url(query)
     assert_equal "http://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/find?f=pjson&outFields=%2A&text=Bluffton%2C+SC",
       res
+  end
+
+  def test_query_for_geocode_with_source_country
+    Geocoder.configure(esri: {source_country: 'USA'})
+    query = Geocoder::Query.new("Bluffton, SC")
+    lookup = Geocoder::Lookup.get(:esri)
+    url = lookup.query_url(query)
+    assert_match %r{sourceCountry=USA}, url
+  end
+
+  def test_query_for_geocode_with_token_and_for_storage
+    token = Geocoder::EsriToken.new('xxxxx', Time.now + 60*60*24)
+    Geocoder.configure(esri: {token: token, for_storage: true})
+    query = Geocoder::Query.new("Bluffton, SC")
+    lookup = Geocoder::Lookup.get(:esri)
+    url = lookup.query_url(query)
+    assert_match %r{forStorage=true}, url
+    assert_match %r{token=xxxxx}, url
+  end
+
+  def test_token_generation_doesnt_overwrite_existing_config
+    Geocoder.configure(esri: {api_key: ['id','secret'], for_storage: true})
+
+    query = Geocoder::Query.new("Bluffton, SC")
+    lookup = Geocoder::Lookup.get(:esri)
+
+    lookup.instance_eval do
+      # redefine `create_token` to return a manually-created token
+      def create_token
+        "xxxxx"
+      end
+    end
+
+    url = lookup.query_url(query)
+
+    assert_match %r{forStorage=true}, url
+    assert_match %r{token=xxxxx}, url
   end
 
   def test_query_for_reverse_geocode
@@ -83,5 +121,26 @@ class EsriTest < GeocoderTestCase
     assert_equal "Address", result.place_type
     assert_equal(48.858129997357558, result.coordinates[0])
     assert_equal(2.2956200048981574, result.coordinates[1])
+  end
+
+  def test_results_viewport
+    result = Geocoder.search("Madison Square Garden, New York, NY").first
+    assert_equal [40.744050000000001, -74.000241000000003, 40.756050000000002, -73.988241000000002],
+      result.viewport
+  end
+
+  def test_cache_key_doesnt_include_api_key_or_token
+    token = Geocoder::EsriToken.new('xxxxx', Time.now + 60)
+    Geocoder.configure(esri: {token: token, api_key: "xxxxx", for_storage: true})
+    query = Geocoder::Query.new("Bluffton, SC")
+    lookup = Geocoder::Lookup.get(:esri)
+    key = lookup.send(:cache_key, query)
+    assert_match %r{forStorage}, key
+    assert_no_match %r{token}, key
+    assert_no_match %r{api_key}, key
+  end
+
+  def teardown
+    Geocoder.configure(esri: {token: nil, for_storage: nil})
   end
 end

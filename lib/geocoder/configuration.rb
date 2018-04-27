@@ -38,6 +38,14 @@ module Geocoder
     data
   end
 
+  ##
+  # Merge the given hash into a lookup's existing configuration.
+  #
+  def self.merge_into_lookup_config(lookup_name, options)
+    base = Geocoder.config[lookup_name]
+    Geocoder.configure(lookup_name => base.merge(options))
+  end
+
   class Configuration
     include Singleton
 
@@ -90,7 +98,7 @@ module Geocoder
       # geocoding options
       @data[:timeout]      = 3           # geocoding service timeout (secs)
       @data[:lookup]       = :google     # name of street address geocoding service (symbol)
-      @data[:ip_lookup]    = :freegeoip  # name of IP address geocoding service (symbol)
+      @data[:ip_lookup]    = :ipinfo_io  # name of IP address geocoding service (symbol)
       @data[:language]     = :en         # ISO-639 language code
       @data[:http_headers] = {}          # HTTP headers for lookup
       @data[:use_https]    = false       # use HTTPS for lookup requests? (if supported)
@@ -105,7 +113,7 @@ module Geocoder
 
       # exceptions that should not be rescued by default
       # (if you want to implement custom error handling);
-      # supports SocketError and TimeoutError
+      # supports SocketError and Timeout::Error
       @data[:always_raise] = []
 
       # calculation options

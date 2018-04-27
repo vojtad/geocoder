@@ -21,6 +21,16 @@ class BingTest < GeocoderTestCase
     assert_equal "New York", result.city
   end
 
+  def test_result_viewport
+    result = Geocoder.search("Madison Square Garden, New York, NY").first
+    assert_equal [
+      40.744944289326668,
+      -74.002353921532631,
+      40.755675807595253,
+      -73.983625397086143
+    ], result.viewport
+  end
+
   def test_no_results
     results = Geocoder.search("no results")
     assert_equal 0, results.length
@@ -70,6 +80,20 @@ class BingTest < GeocoderTestCase
     l = Geocoder::Lookup.get(:bing)
     assert_raises Geocoder::ServiceUnavailable do
       l.send(:results, Geocoder::Query.new("service unavailable"))
+    end
+  end
+
+  def test_raises_exception_when_bing_returns_forbidden_request
+    Geocoder.configure(:always_raise => [Geocoder::RequestDenied])
+    assert_raises Geocoder::RequestDenied do
+      Geocoder.search("forbidden request")
+    end
+  end
+
+  def test_raises_exception_when_bing_returns_internal_server_error
+    Geocoder.configure(:always_raise => [Geocoder::ServiceUnavailable])
+    assert_raises Geocoder::ServiceUnavailable do
+      Geocoder.search("internal server error")
     end
   end
 end

@@ -7,6 +7,15 @@ module Geocoder::Lookup
     def name
       "FreeGeoIP"
     end
+    
+    def supported_protocols
+      if configuration[:host]
+        [:http, :https]
+      else
+        # use https for default host
+        [:https]
+      end
+    end
 
     def query_url(query)
       "#{protocol}://#{host}/json/#{query.sanitized_text}"

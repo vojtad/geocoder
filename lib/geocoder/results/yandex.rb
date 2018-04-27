@@ -25,11 +25,19 @@ module Geocoder::Result
     end
 
     def country
-      address_details['CountryName']
+      if address_details
+        address_details['CountryName']
+      else
+        ""
+      end
     end
 
     def country_code
-      address_details['CountryNameCode']
+      if address_details
+        address_details['CountryNameCode']
+      else
+        ""
+      end
     end
 
     def state
@@ -60,6 +68,14 @@ module Geocoder::Result
       address_details['Locality']['Premise']['PremiseName']
     end
 
+    def street
+      thoroughfare_data && thoroughfare_data['ThoroughfareName']
+    end
+
+    def street_number
+      thoroughfare_data && thoroughfare_data['Premise'] && thoroughfare_data['Premise']['PremiseNumber']
+    end
+
     def kind
       @data['GeoObject']['metaDataProperty']['GeocoderMetaData']['kind']
     end
@@ -68,7 +84,40 @@ module Geocoder::Result
       @data['GeoObject']['metaDataProperty']['GeocoderMetaData']['precision']
     end
 
+    def viewport
+      envelope = @data['GeoObject']['boundedBy']['Envelope'] || fail
+      east, north = envelope['upperCorner'].split(' ').map(&:to_f)
+      west, south = envelope['lowerCorner'].split(' ').map(&:to_f)
+      [south, west, north, east]
+    end
+
     private # ----------------------------------------------------------------
+
+    def thoroughfare_data
+      locality_data && locality_data['Thoroughfare']
+    end
+
+    def locality_data
+      dependent_locality && subadmin_locality && admin_locality
+    end
+
+    def admin_locality
+      address_details && address_details['AdministrativeArea'] &&
+        address_details['AdministrativeArea']['Locality']
+    end
+
+    def subadmin_locality
+      address_details && address_details['AdministrativeArea'] &&
+        address_details['AdministrativeArea']['SubAdministrativeArea'] &&
+        address_details['AdministrativeArea']['SubAdministrativeArea']['Locality']
+    end
+
+    def dependent_locality
+      address_details && address_details['AdministrativeArea'] &&
+        address_details['AdministrativeArea']['SubAdministrativeArea'] &&
+        address_details['AdministrativeArea']['SubAdministrativeArea']['Locality'] &&
+        address_details['AdministrativeArea']['SubAdministrativeArea']['Locality']['DependentLocality']
+    end
 
     def address_details
       @data['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails']['Country']

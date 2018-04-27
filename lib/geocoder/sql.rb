@@ -4,8 +4,8 @@ module Geocoder
 
     ##
     # Distance calculation for use with a database that supports POWER(),
-    # SQRT(), PI(), and trigonometric functions SIN(), COS(), ASIN(),
-    # ATAN2(), DEGREES(), and RADIANS().
+    # SQRT(), PI(), and trigonometric functions SIN(), COS(), ASIN(), 
+    # ATAN2().
     #
     # Based on the excellent tutorial at:
     # http://www.scribd.com/doc/2569355/Geo-Distance-Search-with-MySQL
@@ -47,8 +47,8 @@ module Geocoder
       spans = "#{lat_attr} BETWEEN #{sw_lat} AND #{ne_lat} AND "
       # handle box that spans 180 longitude
       if sw_lng.to_f > ne_lng.to_f
-        spans + "#{lon_attr} BETWEEN #{sw_lng} AND 180 OR " +
-        "#{lon_attr} BETWEEN -180 AND #{ne_lng}"
+        spans + "(#{lon_attr} BETWEEN #{sw_lng} AND 180 OR " +
+        "#{lon_attr} BETWEEN -180 AND #{ne_lng})"
       else
         spans + "#{lon_attr} BETWEEN #{sw_lng} AND #{ne_lng}"
       end
@@ -58,6 +58,9 @@ module Geocoder
     # Fairly accurate bearing calculation. Takes a latitude, longitude,
     # and an options hash which must include a :bearing value
     # (:linear or :spherical).
+    #
+    # For use with a database that supports MOD() and trigonometric functions
+    # SIN(), COS(), ASIN(), ATAN2().
     #
     # Based on:
     # http://www.beginningspatial.com/calculating_bearing_one_point_another

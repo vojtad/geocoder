@@ -26,7 +26,7 @@ class ResultTest < GeocoderTestCase
   def test_result_accepts_reverse_coords_in_reasonable_range_for_madison_square_garden
     Geocoder::Lookup.street_services.each do |l|
       next unless File.exist?(File.join("test", "fixtures", "#{l.to_s}_madison_square_garden"))
-      next if [:bing, :esri, :geocoder_ca, :geocoder_us].include? l # Reverse fixture does not match forward
+      next if [:bing, :esri, :geocoder_ca, :google_places_search, :geocoder_us, :geoportail_lu].include? l # Reverse fixture does not match forward
       Geocoder.configure(:lookup => l)
       set_api_key!(l)
       result = Geocoder.search([40.750354, -73.993371]).first
@@ -79,6 +79,15 @@ class ResultTest < GeocoderTestCase
       set_api_key!(:yandex)
       result = Geocoder.search("canada rue dupuis 14")[6]
       assert_equal "", result.city
+    end
+  end
+
+  def test_mapbox_result_without_context
+    assert_nothing_raised do
+      Geocoder.configure(:lookup => :mapbox)
+      set_api_key!(:mapbox)
+      result = Geocoder.search("Shanghai, China")[0]
+      assert_equal nil, result.city
     end
   end
 
