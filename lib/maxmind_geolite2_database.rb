@@ -23,11 +23,37 @@ module Geocoder
     end
 
     def insert(package, dir = "tmp")
-      data_files(package, dir).each do |filepath,table|
+      data_files(package, dir).each do |filepath, table|
         print "Resetting table #{table}..."
         ActiveRecord::Base.connection.execute("DELETE FROM #{table}")
         puts " done."
         insert_into_table(table, filepath)
+      end
+    end
+
+    def update(package, dir = "tmp")
+      updated_tables = []
+      
+      ActiveRecord::Base.transaction do
+        data_files(package, dir).each do |filepath, table|
+          update_table = "#{table}_update"
+          print "Creating table #{update_table}..."
+          ActiveRecord::Base.connection.execute("CREATE TABLE #{update_table} (LIKE #{table} INCLUDING ALL)")
+          puts " done."
+          insert_into_table(update_table, filepath)
+          updated_tables << [update_table, table]
+        end
+
+        updated_tables.each do |tables|
+          update_table, table = tables
+          old_table = "#{table}_old"
+
+          print "Replacing table #{table} with #{update_table}..."
+          ActiveRecord::Base.connection.execute("ALTER TABLE #{table} RENAME TO #{old_table}")
+          ActiveRecord::Base.connection.execute("ALTER TABLE #{update_table} RENAME TO #{table}")
+          ActiveRecord::Base.connection.execute("DROP TABLE #{old_table}")
+          puts " done."
+        end
       end
     end
 
@@ -40,6 +66,8 @@ module Geocoder
     private # -------------------------------------------------------------
 
     def table_columns(table_name)
+      real_table_name = table_name.gsub(/_update$/, '')
+
       {
         maxmind_geolite2_city_blocks_ipv4: %w[network geoname_id registered_country_geoname_id represented_country_geoname_id is_anonymous_proxy is_satellite_provider postal_code latitude longitude accuracy_radius],
         maxmind_geolite2_city_blocks_ipv6: %w[network geoname_id registered_country_geoname_id represented_country_geoname_id is_anonymous_proxy is_satellite_provider postal_code latitude longitude accuracy_radius],
@@ -47,7 +75,7 @@ module Geocoder
         maxmind_geolite2_country_blocks_ipv4: %w[],
         maxmind_geolite2_country_blocks_ipv6: %w[],
         maxmind_geolite2_country_locations_en: %w[geoname_id locale_code continent_code continent_name country_iso_code country_name subdivision_1_iso_code subdivision_1_name subdivision_2_iso_code subdivision_2_name city_name metro_code time_zone is_in_european_union],
-      }[table_name.to_sym]
+      }[real_table_name.to_sym]
     end
 
     def insert_into_table(table, filepath)

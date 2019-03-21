@@ -5,6 +5,9 @@ namespace :geocoder do
     desc "Download and load/refresh MaxMind GeoLite2 City data"
     task load: [:download, :extract, :insert]
 
+    desc "Download and update MaxMind GeoLite2 City data using temporary tables"
+    task update: [:download, :extract, :update_tables]
+
     desc "Download MaxMind GeoLite 2 City data"
     task :download do
       p = MaxmindGeolite2Task.check_for_package!
@@ -21,6 +24,12 @@ namespace :geocoder do
     task insert: [:environment] do
       p = MaxmindGeolite2Task.check_for_package!
       MaxmindGeolite2Task.insert!(p, dir: ENV['DIR'] || "tmp/")
+    end
+
+    desc "Update MaxMind GeoLite 2 City data using temporary update table"
+    task update_tables: [:environment] do
+      p = MaxmindGeolite2Task.check_for_package!
+      MaxmindGeolite2Task.update!(p, dir: ENV['DIR'] || "tmp/")
     end
   end
 end
@@ -65,6 +74,10 @@ module MaxmindGeolite2Task
 
   def insert!(package, options = {})
     Geocoder::MaxmindGeolite2Database.insert(full_pacage_name(package), options[:dir])
+  end
+
+  def update!(package, options = {})
+    Geocoder::MaxmindGeolite2Database.update(full_pacage_name(package), options[:dir])
   end
 
   private
