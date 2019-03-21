@@ -12,11 +12,11 @@ module Geocoder::Result
     end
 
     def state
-      @data[:region_name]
+      @data[:subdivision_1_name]
     end
 
     def state_code
-      "" # Not available in Maxmind's database
+      @data[:subdivision_1_iso_code]
     end
 
     def country
@@ -24,7 +24,7 @@ module Geocoder::Result
     end
 
     def country_code
-      @data[:country_code2]
+      @data[:country_iso_code]
     end
 
     def postal_code
