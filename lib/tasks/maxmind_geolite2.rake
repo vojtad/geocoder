@@ -11,7 +11,7 @@ namespace :geocoder do
     desc "Download MaxMind GeoLite 2 City data"
     task :download do
       p = MaxmindGeolite2Task.check_for_package!
-      MaxmindGeolite2Task.download!(p, dir: ENV['DIR'] || "tmp/")
+      MaxmindGeolite2Task.download!(p, dir: ENV['DIR'] || "tmp/", download_url: ENV['DOWNLOAD_URL'])
     end
 
     desc "Extract (unzip) MaxMind GeoLite 2 City data"
@@ -47,7 +47,7 @@ module MaxmindGeolite2Task
   end
 
   def download!(package, options = {})
-    Geocoder::MaxmindGeolite2Database.download(full_pacage_name(package), options[:dir])
+    Geocoder::MaxmindGeolite2Database.download(full_pacage_name(package), options[:dir], options[:download_url])
   end
 
   def extract!(package, options = {})

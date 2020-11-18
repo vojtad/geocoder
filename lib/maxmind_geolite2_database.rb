@@ -5,8 +5,8 @@ module Geocoder
   module MaxmindGeolite2Database
     extend self
 
-    def download(package, dir = "tmp")
-      archive_url = archive_url(package)
+    def download(package, dir = "tmp", download_url = nil)
+      archive_url = download_url || archive_url(package)
       filepath = File.expand_path(File.join(dir, archive_filename(package)))
       print "Downloading #{archive_url} to #{filepath}..."
       open(filepath, 'wb') do |file|
