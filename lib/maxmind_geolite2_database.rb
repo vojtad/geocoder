@@ -12,7 +12,7 @@ module Geocoder
       open(filepath, 'wb') do |file|
         uri = URI.parse(archive_url)
         Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-          http.request_get(uri.path) do |resp|
+          http.request_get(uri.request_uri) do |resp|
             resp.read_body do |segment|
               file.write(segment)
             end
