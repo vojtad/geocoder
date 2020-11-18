@@ -11,7 +11,7 @@ module Geocoder
       print "Downloading #{archive_url} to #{filepath}..."
       open(filepath, 'wb') do |file|
         uri = URI.parse(archive_url)
-        Net::HTTP.start(uri.host, uri.port) do |http|
+        Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
           http.request_get(uri.path) do |resp|
             resp.read_body do |segment|
               file.write(segment)
